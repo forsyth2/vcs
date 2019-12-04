@@ -74,6 +74,14 @@ def get_update_array_kw(disp, array, widgets, debug_target=None):
     return kw
 
 
+class IPythonDisplay(object):
+    def __init__(self, png):
+        self.png = png
+
+    def _repr_png_(self):
+        return self.png
+
+
 class Dp(vcs.bestMatch):
 
     """
@@ -305,6 +313,59 @@ class Dp(vcs.bestMatch):
             IPython.display.display(self._parent._display_target_out)
         return widgets
 
+    def _repr_png_new(self):
+    #def _repr_png_(self):
+        st = None
+        debug = False
+        if not HAVE_IPYWIDGETS:
+            debug = False
+        tmp = tempfile.mktemp() + ".png"
+        self._parent.png(tmp)
+        f = open(tmp, "rb")
+        st = f.read()
+        f.close()
+        if HAVE_IPY:
+            sidecar_on = True
+            if HAVE_SIDECAR:
+                if self._parent._display_target is None:  # no target specified
+                    self._parent._display_target = sidecar.Sidecar(
+                        title="VCS Canvas {:d}".format(self._parent.canvasid()))
+                elif isinstance(self._parent._display_target, basestring):
+                    if self._parent._display_target.lower() not in ["inline", "off", "no"]:
+                        self._parent._display_target = sidecar.Sidecar(
+                            title=self._parent._display_target)
+                    else:
+                        sidecar_on = False
+            self._parent._display_target_image = ipywidgets.Image()
+            if HAVE_IPYWIDGETS:
+                if debug:
+                    self._parent._display_target_out = ipywidgets.Output(
+                        layout={'border': '1px solid black'})
+                else:
+                    self._parent._display_target_out = None
+                widgets = self.generate_sliders(debug)
+                self._parent._display_target_image.value = st
+                # Setting widgets = [] doesn't cause the plot to show up, so `widgets` can't be the problem.
+                # The problem is likely with using VBox instead of IPythonDisplay
+                vbox = ipywidgets.VBox(
+                    widgets + [self._parent._display_target_image])
+                # Using this vbox allows us to have the plot in html, but there's no slider in the notebook
+                # vbox = IPythonDisplay(st)
+                if HAVE_SIDECAR and sidecar_on:
+                    with self._parent._display_target:
+                        IPython.display.clear_output()
+                        IPython.display.display(vbox)
+                else:
+                    IPython.display.clear_output()
+                    print("Displays here")
+                    #print(dir(vbox))
+                    IPython.display.display(vbox)
+            else:
+                IPython.display.clear_output()
+            return None
+        return st
+
+    #def _repr_png_master_branch(self):
     def _repr_png_(self):
         st = None
         debug = False
@@ -355,6 +416,32 @@ class Dp(vcs.bestMatch):
         f.close()
         return st
 # TODO: html,json,jpeg,png,svg,latex
+
+
+    def _repr_png_old(self):
+        import tempfile
+        tmp = tempfile.mktemp() + ".png"
+        self._parent.png(tmp)
+        f = open(tmp, "rb")
+        st = f.read()
+        f.close()
+        try:
+            import IPython.display
+            if self._parent._display_target is None:  # no target specified
+                import sidecar  # if sidecar is here use it for target
+                self._parent._display_target = sidecar.Sidecar(
+                    title="VCS Canvas {:d}".format(self._parent.canvasid()))
+            elif isinstance(self._parent._display_target, basestring) and \
+                    self._parent._display_target.lower() not in ["inline", "off", "no"]:
+                self._parent._display_target = sidecar.Sidecar(
+                    title=self._parent._display_target)
+            self._parent._display_target.clear_output()
+            with self._parent._display_target:
+                IPython.display.display(IPythonDisplay(st))
+                st = None
+        except Exception:
+            pass
+        return st
 
     def _getname(self):
         return self._name

@@ -4090,6 +4090,7 @@ class Canvas(vcs.bestMatch):
                 pass
 
         result = dn
+
         if isinstance(arglist[3], str):
             # Pointer to the plotted slab of data and the VCS Canas display infomation.
             # This is needed to find the animation min and max values and the number of
