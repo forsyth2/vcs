@@ -22,16 +22,17 @@ aliases:
     name: create_conda_env
     environment:
        CHANNELS: "-c cdat/label/nightly -c conda-forge"
-       PKGS: "cdms2 cdat_info udunits2 testsrunner mesalib matplotlib image-compare genutil dv3d cdutil cdtime nbformat 'proj4<5' numpy ghostscript vtk-cdat 'libnetcdf=4.6.2'"
+       PKGS: "cdms2 cdat_info udunits2 testsrunner mesalib matplotlib image-compare genutil dv3d cdutil cdtime nbformat 'proj4<5' numpy ghostscript vtk-cdat 'libnetcdf=4.6.2' 'esmf=7.1.0' 'esmpy=7.1.0'"
     command: |
        export PATH=$WORKDIR/miniconda/bin:$PATH
        conda config --set always_yes yes --set changeps1 no
-       #conda update -y -q conda
+       conda config --set channel_priority strict
+       conda update -y -q conda
        conda config --set anaconda_upload no
        if [[ $PY_VER = "py2" ]]; then
           conda create -q -n $PY_VER $CUSTOM_CHANNELS $CHANNELS $PKGS $TEMP_PKGS "python<3"
        else
-          conda create -q -n $PY_VER $CUSTOM_CHANNELS $CHANNELS $PKGS $TEMP_PKGS "python=3.7" sphinxcontrib-websupport nbsphinx easydev $COVERAGE_PKGS
+          conda create -q -n $PY_VER $CUSTOM_CHANNELS $CHANNELS $PKGS $TEMP_PKGS "python>=3.7,<3.8" sphinxcontrib-websupport nbsphinx easydev $COVERAGE_PKGS
        fi
 
   - &setup_vcs
