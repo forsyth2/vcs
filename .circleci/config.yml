@@ -27,7 +27,7 @@ aliases:
        export PATH=$WORKDIR/miniconda/bin:$PATH
        conda config --set always_yes yes --set changeps1 no
        conda config --set channel_priority strict
-       conda update -y -q conda
+       #conda update -y -q conda
        conda config --set anaconda_upload no
        if [[ $PY_VER = "py2" ]]; then
           conda create -q -n $PY_VER $CUSTOM_CHANNELS $CHANNELS $PKGS $TEMP_PKGS "python<3"
