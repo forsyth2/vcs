@@ -21,6 +21,8 @@ def assert_image_tag_present(html_file):
     assert image_tag_present
 
 
+# Move these to jupyter-vcdat?
+# Use Selenium?
 class TestVCSExportHTML(unittest.TestCase):
     def testExportHTML(self):
         debug_print('Run the notebook')
